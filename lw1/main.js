@@ -50,6 +50,11 @@ const renderBLetter = (context, point, scale) => {
     context.stroke()
 }
 
+/**
+ * @param {CanvasRenderingContext2D} context
+ * @param {Point} point
+ * @param {number} scale
+ */
 const renderKLetter = (context, point, scale) => {
     context.fillStyle = 'red'
     context.strokeStyle = 'red'
@@ -103,11 +108,13 @@ const canvasCleanup = (context) => {
  */
 let JumpData
 
+const ACCELERATION = 1
+
 /**
  * @param {JumpData} jumpData
  */
 const updateJumpData = (jumpData) => {
-    jumpData.shift = jumpData.time * (jumpData.speed - acceleration * jumpData.time / 2)
+    jumpData.shift = jumpData.time * (jumpData.speed - ACCELERATION * jumpData.time / 2)
     if (jumpData.shift < 0) {
         jumpData.shift = 0
         jumpData.time = 0
@@ -115,12 +122,20 @@ const updateJumpData = (jumpData) => {
     ++jumpData.time
 }
 
-const acceleration = 1
-
 /**
- * @type {Map<function, JumpData>}
+ * @param {Map<function, JumpData>} storage
+ * @param {function} renderFunc
+ * @param {Point} position
  */
-let jumpDataStorage = new Map()
+const jump = (storage, renderFunc, position) => {
+    let data = storage.get(renderFunc)
+    updateJumpData(data)
+    renderFunc({
+        x: position.x,
+        y: position.y - data.shift,
+    })
+    storage.set(renderFunc, data)
+}
 
 const start = () => {
     /**
@@ -130,6 +145,11 @@ const start = () => {
     if (context === null) {
         throw new Error("canvas context is null")
     }
+
+    /**
+     * @type {Map<function, JumpData>}
+     */
+    let jumpDataStorage = new Map()
 
     const first = (point) => {
         renderBLetter(context, point, 3)
@@ -159,21 +179,9 @@ const start = () => {
 
     const frame = () => {
         canvasCleanup(context)
-        let firstJumpData = jumpDataStorage.get(first)
-        updateJumpData(firstJumpData)
-        first({x: 300, y: 300 - firstJumpData.shift})
-        jumpDataStorage.set(first, firstJumpData)
-
-        let secondJumpData = jumpDataStorage.get(second)
-        updateJumpData(secondJumpData)
-        second({x: 400, y: 300 - secondJumpData.shift})
-        jumpDataStorage.set(second, secondJumpData)
-
-        let thirdJumpData = jumpDataStorage.get(third)
-        updateJumpData(thirdJumpData)
-        third({x: 500, y: 300 - thirdJumpData.shift})
-        jumpDataStorage.set(third, thirdJumpData)
-
+        jump(jumpDataStorage, first, {x: 300, y: 300})
+        jump(jumpDataStorage, second, {x: 400, y: 300})
+        jump(jumpDataStorage, third, {x:500, y: 300})
         requestAnimationFrame(frame)
     }
 
