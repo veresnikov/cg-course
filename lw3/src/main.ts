@@ -1,6 +1,5 @@
 import {Application} from "./common/webGLUtils/application";
 import {Kikoriki} from "./application/kikoriki";
-import {useDragAndDrop} from "./common/hooks/useDragAndDrop";
 import {useCanvasMove} from "./common/hooks/useCanvasMove";
 
 const view = new Kikoriki()
