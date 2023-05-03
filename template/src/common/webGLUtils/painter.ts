@@ -30,6 +30,10 @@ export class Painter {
         this.renderFunction(this)
     }
 
+    public drawCustomFigure(f: (ctx: WebGL2RenderingContext) => void): void {
+        f(this.ctx)
+    }
+
     public drawCircle(center: Point, r: number, segments: number): void {
         this.drawEllipse(center, r, r, segments)
     }
